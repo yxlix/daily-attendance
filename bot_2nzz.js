@@ -50,6 +50,8 @@ async function main() {
         allMessage += "cookie失效";
         return;
     }
+    let data = await checkin();
+    allMessage += data;
 }
 
 function getFormhash() {
@@ -87,9 +89,11 @@ function getFormhash() {
     })
 }
 
-function checkin() {
+function checkin(formhash) {
+    const body = JSON.stringify({ "formhash": formhash, "qdxq": "kx", "qdmode": "2", "todaysay": "", "fastreply": "0" });
     const options = {
-        "url": 'http://www.2nzz.com',
+        "url": `http://www.2nzz.com/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&sign_as=1&inajax=1`,
+        body,
         "headers": {
             "Cookie": cookie,
             "Origin": "http://www.2nzz.com",
@@ -100,17 +104,21 @@ function checkin() {
         }
     };
     return new Promise(resolve => {
-        $.get(options, async (err, resp, data) => {
+        $.post(options, async (err, resp, data) => {
             try {
                 if (err) {
                     console.log(err);
                     console.log(`${$.name} API请求失败，请检查网路重试`)
                 } else {
-                    if (data) {
-                        // console.log(data);
-                        data = JSON.parse(data);
+                    console.log(data);
+                    if (data.indexOf("您今天已经签到过了或者签到时间还未开始") > -1) {
+                        data = "您今天已经签到过了或者签到时间还未开始"
                     } else {
-                        console.log("没有返回数据")
+                        var patt = /<div class="c">(.*?)<\/div>/g;
+                        data = patt.exec(data);
+                        if (data === null) {
+                            data = "签到失败";
+                        }
                     }
                 }
             } catch (e) {
