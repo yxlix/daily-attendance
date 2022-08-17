@@ -78,7 +78,7 @@ function checkin() {
                     console.log(`${$.name} API请求失败，请检查网路重试`)
                 } else {
                     if (data) {
-                        console.log(data);
+                        // console.log(data);
                         data = JSON.parse(data);
                     } else {
                         console.log("没有返回数据")
