@@ -5,6 +5,7 @@
 */
 const $ = new Env('【签到】咔叽网单');
 const notify = require('./sendNotify');
+var iconv = require('iconv-lite');
 let allMessage = '';
 
 //取cookie
@@ -50,7 +51,7 @@ async function main() {
         allMessage += "cookie失效";
         return;
     }
-    let data = await checkin();
+    let data = await checkin(formhash[1]);
     allMessage += data;
 }
 
@@ -74,8 +75,7 @@ function getFormhash() {
                     console.log(`${$.name} API请求失败，请检查网路重试`)
                 } else {
                     if (data) {
-                        var patt = /<input type="hidden" name="formhash" value="(.*?)"/g;
-                        data = patt.exec(data);
+                        data = data.match(/<input type="hidden" name="formhash" value="(.*?)"/);
                     } else {
                         console.log("没有返回数据")
                     }
@@ -90,10 +90,11 @@ function getFormhash() {
 }
 
 function checkin(formhash) {
-    const body = JSON.stringify({ "formhash": formhash, "qdxq": "kx", "qdmode": "2", "todaysay": "", "fastreply": "0" });
+    const body = "formhash=" + formhash + "&qdxq=kx&qdmode=2&todaysay=&fastreply=0";
+    const form = { "formhash": formhash, "qdxq": "kx", "qdmode": "2", "todaysay": "", "fastreply": "0" };
     const options = {
         "url": `http://www.2nzz.com/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&sign_as=1&inajax=1`,
-        body,
+        form,
         "headers": {
             "Cookie": cookie,
             "Origin": "http://www.2nzz.com",
@@ -101,7 +102,8 @@ function checkin(formhash) {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "Referer": "http://www.2nzz.com/index.php",
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-        }
+        },
+        responseType: "buffer"
     };
     return new Promise(resolve => {
         $.post(options, async (err, resp, data) => {
@@ -110,14 +112,16 @@ function checkin(formhash) {
                     console.log(err);
                     console.log(`${$.name} API请求失败，请检查网路重试`)
                 } else {
-                    console.log(data);
-                    if (data.indexOf("您今天已经签到过了或者签到时间还未开始") > -1) {
-                        data = "您今天已经签到过了或者签到时间还未开始"
+                    data = iconv.decode(data, 'gbk');
+                    if (data.indexOf("您今日已经签到，请明天再来") > -1) {
+                        data = "您今日已经签到，请明天再来"
                     } else {
-                        var patt = /<div class="c">(.*?)<\/div>/g;
-                        data = patt.exec(data);
+                        var patt = /<div class="c">(.*?)<\/div>/;
+                        data = data.match(patt);
                         if (data === null) {
                             data = "签到失败";
+                        } else {
+                            data = data[1];
                         }
                     }
                 }
