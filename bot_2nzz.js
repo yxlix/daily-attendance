@@ -1,7 +1,7 @@
 /*
 咔叽网单自动签到
 [task_local]
-0 0 * * * bot_2nzz.js
+1 0 * * * bot_2nzz.js
 */
 const $ = new Env('【签到】咔叽网单');
 const notify = require('./sendNotify');
@@ -112,7 +112,9 @@ function checkin(formhash) {
                     console.log(err);
                     console.log(`${$.name} API请求失败，请检查网路重试`)
                 } else {
+                    console.log(data);
                     data = iconv.decode(data, 'gbk');
+                    console.log(data);
                     if (data.indexOf("您今日已经签到，请明天再来") > -1) {
                         data = "您今日已经签到，请明天再来"
                     } else {
