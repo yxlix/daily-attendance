@@ -117,7 +117,7 @@ function checkin(formhash) {
                     if (data.indexOf("您今日已经签到，请明天再来") > -1) {
                         data = "您今日已经签到，请明天再来"
                     } else {
-                        var patt = /<div class="c">(.*?)<\/div>/;
+                        var patt = /<div class="c">\r\n(.*?)<\/div>/;
                         data = data.match(patt);
                         if (data === null) {
                             data = "签到失败";
