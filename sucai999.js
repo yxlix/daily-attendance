@@ -29,7 +29,7 @@ let allMessage = '';
 });
 
 async function main(index) {
-    allMessage += `\n【账号${index}： 】`;
+    allMessage += `\n【账号${index}】`;
     let data = await checkin();
     allMessage += data;
 }
