@@ -95,6 +95,7 @@ function checkin(formhash) {
                     data = data[1];
                 }
             }
+            console.log(data);
         } catch (err) {
             console.log(err);
             data = "签到接口请求出错"
