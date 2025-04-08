@@ -17,4 +17,6 @@ if (process.env.SMZDM_COOKIE) {
         cookiesArr = [process.env.SMZDM_COOKIE];
     }
 }
-QLAPI.systemNotify(name,'123');
+QLAPI.systemNotify({ title: name, content: '231' }).then((x) => {
+    console.log('systemNotify', x);
+});
