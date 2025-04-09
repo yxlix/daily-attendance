@@ -35,8 +35,9 @@ async function main(index) {
         allMessage += "cookie失效";
         return;
     }
-    // let data = await checkin(formhash[1]);
-    // allMessage += data;
+    console.log(uid[1]);
+    let data = await checkin(uid[1]);
+    allMessage += data;
 }
 
 function getUid() {
@@ -48,7 +49,6 @@ function getUid() {
                     cookie,
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36 Edg/88.0.705.74"
                 },
-                responseType: 'document'
             };
             let res = await axios.get(url, option);
             if (res.data) {
@@ -63,21 +63,19 @@ function getUid() {
         resolve(data);
     });
 }
-function checkin() {
+function checkin(uid) {
     return new Promise(async (resolve) => {
         try {
-            let url = "https://www.pttime.org/attendance.php?type=sign&uid=57449";
+            let url = "https://www.pttime.org/attendance.php?type=sign&uid=" + uid;
             const option = {
                 headers: {
                     cookie,
                     "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0'
-                },
-                responseType: 'document'
+                }
             };
             let res = await axios.get(url, option);
             let data = res.data.replace(/[\r\n]/g, '')
             if (data.indexOf('class="embedded"') > 0) {
-
                 let regex = /使用\&说明<\/a>\]\:(.*?)\[/;
                 let match = data.match(regex);
                 if (match && match[1]) {
@@ -85,7 +83,6 @@ function checkin() {
                 }
                 //去掉<a>标签,只保留浮点数
                 moli = moli.replace(/<a.*?>(.*?)<\/a>/g, '')
-                $.log('总魔力值:' + moli)
                 //查询第一次"时间"出现的位置,并截取后面19个字符
                 //第一次签到时间
                 let firstSignIndex = data.indexOf('第一次签到：')
@@ -94,14 +91,12 @@ function checkin() {
                 } else {
                     firstSignTime = '0000-00-00 00:00:00'
                 }
-                $.log('第一次签到时间：' + firstSignTime);
                 let timeIndex = data.indexOf('时间：')
                 let time = data.substring(timeIndex + 3, timeIndex + 22)
                 if (time) {
                 } else {
                     time = '0000-00-00 00:00:00'
                 }
-                $.log('今日签到时间：' + time);
                 // 查询获得魔力值：出现的位置, 并截取后面<b>标签内的内容
                 const todayMoliString = data.substring(data.indexOf('获得魔力值：') + 6, data.indexOf('获得魔力值：') + 20);
                 let todayMoli = todayMoliString.substring(todayMoliString.indexOf('<b>') + 3, todayMoliString.indexOf('</b>'));
@@ -109,7 +104,6 @@ function checkin() {
                 } else {
                     todayMoli = '000'
                 }
-                $.log('今日魔力值：' + todayMoli);
                 // 查询连续天数：出现的位置
                 const dayString = data.substring(data.indexOf('连续天数：') + 5, data.indexOf('连续天数：') + 20);
                 //获取连续天数
@@ -118,7 +112,6 @@ function checkin() {
                 } else {
                     day = '000'
                 }
-                $.log('连续签到天数：' + day);
                 //总签等级 查询总签到等级：出现的位置, 并截取后面title="的值
                 const totalSignLevelString = data.substring(data.indexOf('总签到等级：') + 6, data.indexOf('总签到等级：') + 31);
                 let totalSignLevel = totalSignLevelString.substring(totalSignLevelString.indexOf('title=\'') + 7, totalSignLevelString.indexOf('\'>'));
@@ -132,7 +125,6 @@ function checkin() {
                 } else {
                     totalSignLevelLogo = ''
                 }
-                $.log('总签到等级：' + totalSignLevel);
                 //连签等级
                 const cSignLevelString = data.substring(data.indexOf('连续等级：') + 5, data.indexOf('连续等级：') + 40);
                 let cSignLevel = cSignLevelString.substring(cSignLevelString.indexOf('title=\'') + 7, cSignLevelString.indexOf('\'>'));
@@ -146,34 +138,27 @@ function checkin() {
                 } else {
                     cSignLevelLogo = ''
                 }
-                $.log('连续签到等级：' + cSignLevel);
                 if (data.indexOf('今日签到成功') > 0) {
-                    $.log('今日签到成功')
-                    msg += '\n⭐今日签到成功'
-                    msg += `\n⭐${totalSignLevel} ${totalSignLevelLogo}`
-                    msg += `\n⭐${cSignLevel} ${cSignLevelLogo}`
-                    msg += `\n⭐首签：${firstSignTime}`
-                    msg += `\n⭐今日：${time}\n⭐签到魔力值：${todayMoli}\n⭐连续签到天数：${day}天\n⭐总魔力值：${moli}`;
+                    allMessage += '\n⭐今日签到成功'
+                    allMessage += `\n⭐${totalSignLevel} ${totalSignLevelLogo}`
+                    allMessage += `\n⭐${cSignLevel} ${cSignLevelLogo}`
+                    allMessage += `\n⭐首签：${firstSignTime}`
+                    allMessage += `\n⭐今日：${time}\n⭐签到魔力值：${todayMoli}\n⭐连续签到天数：${day}天\n⭐总魔力值：${moli}`;
                 } else if (data.indexOf('签到中止') > 0) {
-                    $.log('今日签到中止')
-                    msg += '\n⭐今日签到中止'
+                    allMessage += '\n⭐今日签到中止'
                 } else {
-                    $.log('今日签到完成')
-                    msg += '\n⭐今日签到完成'
-                    msg += `\n⭐${totalSignLevel} ${totalSignLevelLogo}`
-                    msg += `\n⭐${cSignLevel} ${cSignLevelLogo}`
-                    msg += `\n⭐首签：${firstSignTime}`
-                    msg += `\n⭐今日：${time}\n⭐签到魔力值：${todayMoli}\n⭐连续签到天数：${day}天\n⭐总魔力值：${moli}`;
+                    allMessage += '\n⭐今日签到完成'
+                    allMessage += `\n⭐${totalSignLevel} ${totalSignLevelLogo}`
+                    allMessage += `\n⭐${cSignLevel} ${cSignLevelLogo}`
+                    allMessage += `\n⭐首签：${firstSignTime}`
+                    allMessage += `\n⭐今日：${time}\n⭐签到魔力值：${todayMoli}\n⭐连续签到天数：${day}天\n⭐总魔力值：${moli}`;
                 }
             } else if (data.indexOf('高频刷新签到') > 0) {
-                $.log('高频刷新签到');
                 console.log('高频刷新签到！！\n');
-                msg += '\n 高频刷新签到，小心封号!'
+                allMessage += '\n 高频刷新签到，小心封号!'
             } else {
-
-                $.log('签到失败');
                 console.log('签到失败！！\n');
-                msg += '\n 签到失败!'
+                allMessage += '\n 签到失败!'
             }
         } catch (err) {
             console.log(err);
