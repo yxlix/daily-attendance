@@ -84,6 +84,7 @@ function checkin(formhash) {
                 }
             };
             let res = await axios.post(url, form, header);
+            console.log(res.data);
             if (res.data.indexOf("您今日已经签到，请明天再来") > -1) {
                 data = "您今日已经签到，请明天再来"
             } else {
